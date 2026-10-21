@@ -1,0 +1,6 @@
+.vkmd-download { display: inline-flex !important; align-items: center !important; gap: 5px !important; position: relative !important; z-index: 2 !important; height: 25px !important; margin: 3px 6px !important; padding: 3px 8px !important; border: 1px solid #c0cad5 !important; border-radius: 2px !important; background: #f0f3f6 !important; color: #45688e !important; font: 11px Tahoma, Arial, sans-serif !important; white-space: nowrap !important; cursor: pointer !important; }
+.vkmd-download:hover { background: #e1e7ed !important; border-color: #8da5bf !important; }
+.vkmd-download:focus-visible { outline: 2px solid #45688e !important; outline-offset: 2px !important; }
+.vkmd-download:disabled { opacity: .65 !important; cursor: wait !important; }
+.vkmd-download img { display: block !important; width: 13px !important; height: 13px !important; }
+.vkmd-notice { position: fixed !important; z-index: 2147483647 !important; right: 20px !important; bottom: 20px !important; max-width: 360px !important; padding: 14px 18px !important; border: 1px solid #b9c7d6 !important; background: #fff !important; color: #333 !important; box-shadow: 0 2px 12px #0003 !important; font: 12px/1.5 Tahoma, Arial, sans-serif !important; }

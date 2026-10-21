@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>VK Music Downloader</title>
+  <link rel="stylesheet" href="popup.css">
+  <script type="module" src="popup.js"></script>
+</head>
+<body>
+  <header class="header">
+    <img src="assets/logo-vk.png" width="40" height="23" alt="ВКонтакте">
+    <span class="header-divider"></span>
+    <div class="brand">Музыка <span>скачивание аудиозаписей</span></div>
+    <span class="version">v1.0</span>
+  </header>
+
+  <nav class="tabs" aria-label="Разделы">
+    <button id="tab-music" class="tab selected" aria-pressed="true">Мои аудиозаписи</button>
+    <button id="tab-help" class="tab" aria-pressed="false">Как это работает</button>
+  </nav>
+
+  <main id="music-panel">
+    <div class="section-heading"><h1>Скачать аудиозапись</h1><span id="connection-label">Проверяем вкладку…</span></div>
+    <section class="current" id="track-card" aria-label="Выбранная аудиозапись" aria-busy="true">
+      <img class="artwork" id="artwork" src="assets/music.svg" width="76" height="76" alt="">
+      <div class="track-meta">
+        <span class="eyebrow" id="track-eyebrow">МУЗЫКА ИЗ ВКОНТАКТЕ</span>
+        <h2 id="track-title">Откройте музыку VK</h2>
+        <p id="track-artist">и выберите аудиозапись</p>
+        <div class="track-details"><span id="track-duration">—:—</span><span class="format">MP3</span><span>с обложкой</span></div>
+      </div>
+    </section>
+
+    <div class="download-area">
+      <button class="button blue" id="download" disabled><img src="assets/download.svg" width="14" height="14" alt=""><span id="download-label">Скачать MP3</span></button>
+      <button class="button gray" id="save-cover" disabled><img src="assets/image.svg" width="13" height="13" alt="">Сохранить обложку</button>
+    </div>
+
+    <div class="feedback" id="feedback" hidden>
+      <div class="progress-caption"><span id="progress-percent" aria-hidden="true" hidden>0%</span><p id="status-message" role="status" aria-live="polite"></p></div>
+      <div class="progress-track" id="progress-track" role="progressbar" aria-label="Подготовка и сохранение MP3" aria-describedby="status-message" aria-valuemin="0" aria-valuemax="100" hidden><div id="progress-bar"></div></div>
+      <button class="text-button" id="open-download" hidden>Показать в папке</button>
+    </div>
+
+    <section class="library" aria-labelledby="list-heading">
+      <div class="library-heading"><h2 id="list-heading">Аудиозаписи на странице <span id="track-count">0</span></h2><button class="text-button" id="refresh">Обновить</button></div>
+      <div class="search-wrap"><img src="assets/search.svg" width="13" height="13" alt=""><input id="search" type="search" placeholder="Поиск по названию или исполнителю" aria-label="Поиск аудиозаписей" autocomplete="off"></div>
+      <div class="track-list" id="track-list" aria-label="Аудиозаписи"></div>
+      <div class="empty" id="empty"><img src="assets/music.svg" width="28" height="28" alt=""><p id="empty-message">Откройте раздел «Музыка» ВКонтакте.</p><a href="https://vk.com/audios" target="_blank" rel="noreferrer" id="open-vk">Перейти к музыке</a></div>
+    </section>
+    <div class="hint"><img src="assets/info.svg" width="14" height="14" alt=""><p>Можно закрыть это окно — загрузка продолжится.<br>Не закрывайте Chrome до завершения.</p></div>
+  </main>
+
+  <main id="help-panel" hidden>
+    <div class="section-heading"><h1>Ваша музыка — рядом</h1></div>
+    <ol class="instructions">
+      <li><strong>Откройте ВКонтакте</strong><p>Войдите в свой аккаунт на vk.com или vk.ru и перейдите к музыке.</p></li>
+      <li><strong>Выберите аудиозапись</strong><p>Нажмите на трек в списке расширения или найдите кнопку «Скачать MP3» рядом с записью на странице VK.</p></li>
+      <li><strong>Скачайте MP3</strong><p>Файл с названием, исполнителем и доступной обложкой появится в папке загрузок. Можно закрыть это окно — загрузка продолжится.</p></li>
+    </ol>
+    <div class="help-note">Обработка выполняется в вашем браузере. Конвертация не улучшает исходное качество звука. Недоступные полные записи, превью и DRM не поддерживаются.</div>
+    <a class="button blue help-link" href="https://vk.com/audios" target="_blank" rel="noreferrer">Открыть музыку VK</a>
+  </main>
+
+  <footer><span>В духе ВКонтакте 2013</span><span>Локально · Без рекламы</span></footer>
+</body>
+</html>

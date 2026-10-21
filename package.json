@@ -1,0 +1,27 @@
+{
+  "name": "vk-music-downloader",
+  "version": "1.0.4",
+  "private": true,
+  "type": "module",
+  "description": "Chrome extension for downloading VK audio with a classic VK 2013 interface.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "dev": "node scripts/preview.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node scripts/browser-test.mjs",
+    "prepackage": "node scripts/build.mjs",
+    "package": "node scripts/package.mjs"
+  },
+  "dependencies": {
+    "@ffmpeg/core": "0.12.10",
+    "@ffmpeg/ffmpeg": "0.12.15"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@puppeteer/browsers": "^3.2.5",
+    "bootstrap-icons": "^1.13.2",
+    "fflate": "^0.8.2",
+    "puppeteer-core": "^25.14.0",
+    "sharp": "^0.35.5"
+  }
+}
