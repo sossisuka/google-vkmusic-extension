@@ -1,5 +1,9 @@
 import { fileName, isVkPage, audioId } from './shared/model.js';
 import { readTracks, resolveTrack } from './vk.js';
+import { readVkCatalog } from './catalog-reader.js';
+import { readVkPage } from './page-reader.js';
+import { normalizeTrack } from './shared/model.js';
+import { isSaverPage, playlistAddress } from './shared/website.js';
 
 let creatingOffscreen;
 let starting = false;
@@ -61,6 +65,7 @@ async function download(id, tabId) {
 
 async function handle(message, sender) {
   if (sender.id !== chrome.runtime.id) throw new Error('Недопустимый отправитель.');
+  if (message.type === 'WEBSITE') return handleWebsite(message, sender);
   const internal = sender.url?.startsWith(chrome.runtime.getURL('')) && !sender.tab?.url?.startsWith('https:');
   const fromOffscreen = sender.url === chrome.runtime.getURL('offscreen.html');
   if (['PROGRESS', 'READY', 'FAILED'].includes(message.type)) {
@@ -126,3 +131,63 @@ chrome.downloads.onChanged.addListener(delta => {
   if (['complete', 'interrupted'].includes(delta.state?.current)) finishDownload(delta.id, delta.state.current, delta.error?.current).catch(console.error);
 });
 chrome.tabs.onRemoved.addListener(tabId => { chrome.storage.session.remove(`job:${tabId}`).catch(() => {}); });
+
+async function handleWebsite(message, sender) {
+  if (!sender.tab || !isSaverPage(sender.url) || !isSaverPage(sender.tab.url)) throw new Error('Недопустимая страница VKSaver.');
+  const { action, payload = {} } = message;
+  if (action === 'PING') return { ok: true, version: chrome.runtime.getManifest().version };
+  const key = `website:${sender.tab.id}`;
+  let tab;
+  const state = (await chrome.storage.session.get(key))[key];
+  if (state?.tabId) { try { const candidate = await chrome.tabs.get(state.tabId); if (isVkPage(candidate.url)) tab = candidate; } catch { /* Closed tab. */ } }
+  if (!tab) {
+    const tabs = await chrome.tabs.query({ url: ['https://vk.com/*', 'https://www.vk.com/*', 'https://vk.ru/*', 'https://www.vk.ru/*'] });
+    tab = tabs.find(item => /\/(?:audio|music)/.test(new URL(item.url).pathname)) || tabs[0];
+  }
+  if (!tab) throw new Error('Откройте vk.com/music в соседней вкладке, войдите в VK и нажмите «Подключить VK».');
+  await chrome.storage.session.set({ [key]: { tabId: tab.id } });
+  if (['CONNECT', 'LIBRARY'].includes(action)) {
+    const page = await readTracks(tab.id);
+    if (!page.viewerId) throw new Error('Войдите в VK во вкладке с музыкой и повторите подключение.');
+    return { ok: true, tabId: tab.id, tracks: page.tracks.map(publicTrack), currentId: page.currentId };
+  }
+  if (['SEARCH', 'IMPORT'].includes(action)) {
+    const request = action === 'IMPORT' ? { ...playlistAddress(payload.url), offset: Math.max(0, Math.min(10000, Number(payload.offset) || 0)) } : { query: String(payload.query || '').trim().slice(0, 200), cursor: payload.cursor && { sectionId: String(payload.cursor.sectionId).slice(0, 1000), nextFrom: String(payload.cursor.nextFrom).slice(0, 2000) } };
+    if (action === 'SEARCH' && !request.query) throw new Error('Введите название трека или исполнителя.');
+    const [result] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', func: readVkCatalog, args: [request] });
+    if (!result?.result) throw new Error('Не удалось прочитать каталог VK. Обновите вкладку с музыкой.');
+    const data = result.result;
+    const cacheKey = `catalog:${tab.id}`;
+    const cache = (await chrome.storage.session.get(cacheKey))[cacheKey] || {};
+    for (const raw of data.records) {
+      const id = Array.isArray(raw) ? `${raw[1]}_${raw[0]}` : `${raw.owner_id}_${raw.id}`;
+      if (audioId(id)) { delete cache[id]; cache[id] = raw; }
+    }
+    await chrome.storage.session.set({ [cacheKey]: Object.fromEntries(Object.entries(cache).slice(-1000)) });
+    const [normalized] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', func: readVkPage, args: [null, false, { records: data.records, only: true }] });
+    const tracks = (normalized?.result?.tracks || []).map(normalizeTrack).map(publicTrack);
+    return { ok: true, tracks, cursor: data.cursor, hasMore: data.hasMore, title: data.title };
+  }
+  if (action === 'GET_JOB') return { ok: true, job: (await chrome.storage.session.get(`job:${tab.id}`))[`job:${tab.id}`] || null };
+  const id = audioId(payload.id);
+  if (action !== 'PAUSE' && !id) throw new Error('Выберите аудиозапись.');
+  if (action === 'DOWNLOAD') return download(id, tab.id);
+  if (action === 'COVER') {
+    const { track } = await resolveTrack(tab.id, id);
+    if (!track.artwork) throw new Error('У этой записи нет обложки.');
+    const ext = new URL(track.artwork).pathname.match(/\.(png|jpe?g|webp)$/i)?.[1] || 'jpg';
+    return { ok: true, downloadId: await chrome.downloads.download({ url: track.artwork, filename: fileName(track.artist, track.title, ext), conflictAction: 'uniquify', saveAs: false }) };
+  }
+  if (action === 'PLAY' || action === 'PAUSE') {
+    const [result] = await chrome.scripting.executeScript({ target: { tabId: tab.id }, world: 'MAIN', func: (trackId, pause) => {
+      const player = window.getAudioPlayer?.();
+      if (!player) return false;
+      if (pause) { player.pause?.(); return true; }
+      if (typeof player.play !== 'function') return false;
+      player.play(trackId); return true;
+    }, args: [id, action === 'PAUSE'] });
+    if (!result?.result) throw new Error('Откройте плеер во вкладке VK и повторите.');
+    return { ok: true };
+  }
+  throw new Error('Неизвестный запрос VKSaver.');
+}

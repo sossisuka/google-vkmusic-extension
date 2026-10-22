@@ -1,23 +1,90 @@
 {
   "manifest_version": 3,
   "name": "VK Music Downloader — 2013",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "description": "Скачивайте аудиозаписи VK в MP3 с обложкой. Классический интерфейс ВКонтакте 2013 года, обработка прямо в браузере.",
   "minimum_chrome_version": "116",
-  "permissions": ["activeTab", "scripting", "downloads", "storage", "offscreen"],
-  "host_permissions": ["https://vk.com/*", "https://*.vk.com/*", "https://vk.ru/*", "https://*.vk.ru/*", "https://*.vkuseraudio.net/*", "https://*.vkuseraudio.com/*", "https://*.vkuseraudio.ru/*", "https://*.userapi.com/*", "https://*.vkuserphoto.ru/*", "https://*.vk-cdn.net/*"],
-  "background": { "service_worker": "background.js", "type": "module" },
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "storage",
+    "offscreen"
+  ],
+  "host_permissions": [
+    "https://vk.com/*",
+    "https://*.vk.com/*",
+    "https://vk.ru/*",
+    "https://*.vk.ru/*",
+    "https://*.vkuseraudio.net/*",
+    "https://*.vkuseraudio.com/*",
+    "https://*.vkuseraudio.ru/*",
+    "https://*.userapi.com/*",
+    "https://*.vkuserphoto.ru/*",
+    "https://*.vk-cdn.net/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
   "action": {
     "default_title": "VK Music Downloader",
     "default_popup": "popup.html",
-    "default_icon": { "16": "assets/icon-16.png", "32": "assets/icon-32.png", "48": "assets/icon-48.png", "128": "assets/icon-128.png" }
+    "default_icon": {
+      "16": "assets/icon-16.png",
+      "32": "assets/icon-32.png",
+      "48": "assets/icon-48.png",
+      "128": "assets/icon-128.png"
+    }
   },
-  "icons": { "16": "assets/icon-16.png", "32": "assets/icon-32.png", "48": "assets/icon-48.png", "128": "assets/icon-128.png" },
-  "content_scripts": [{
-    "matches": ["https://vk.com/*", "https://www.vk.com/*", "https://m.vk.com/*", "https://vk.ru/*", "https://www.vk.ru/*", "https://m.vk.ru/*"],
-    "js": ["content.js"], "css": ["content.css"], "run_at": "document_idle"
-  }],
-  "web_accessible_resources": [{ "resources": ["assets/download-blue.svg"], "matches": ["https://vk.com/*", "https://*.vk.com/*", "https://vk.ru/*", "https://*.vk.ru/*"] }],
+  "icons": {
+    "16": "assets/icon-16.png",
+    "32": "assets/icon-32.png",
+    "48": "assets/icon-48.png",
+    "128": "assets/icon-128.png"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://vk.com/*",
+        "https://www.vk.com/*",
+        "https://m.vk.com/*",
+        "https://vk.ru/*",
+        "https://www.vk.ru/*",
+        "https://m.vk.ru/*"
+      ],
+      "js": [
+        "content.js"
+      ],
+      "css": [
+        "content.css"
+      ],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://inetcdn.online/vksaver/*",
+        "http://127.0.0.1/vksaver/*"
+      ],
+      "js": [
+        "website-bridge.js"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": [
+        "assets/download-blue.svg"
+      ],
+      "matches": [
+        "https://vk.com/*",
+        "https://*.vk.com/*",
+        "https://vk.ru/*",
+        "https://*.vk.ru/*"
+      ]
+    }
+  ],
   "content_security_policy": {
     "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; worker-src 'self'; img-src 'self' https://*.vk.com https://*.vk.ru https://*.userapi.com https://*.vkuserphoto.ru https://*.vk-cdn.net data:; connect-src 'self' https://vk.com https://*.vk.com https://vk.ru https://*.vk.ru https://*.vkuseraudio.net https://*.vkuseraudio.com https://*.vkuseraudio.ru https://*.userapi.com https://*.vkuserphoto.ru https://*.vk-cdn.net"
   }

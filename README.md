@@ -1,5 +1,7 @@
 # VK Music Downloader — 2013
 
+Version **1.1.0** also connects to [VKSaver](https://inetcdn.online/vksaver/), a full-page VK 2016 music interface with search, playlist imports and queued MP3 downloads. Install the updated ZIP, reload the VK and VKSaver tabs, sign into VK, and click «Подключить VK» on the page. Authentication stays in your VK tab; the website does not receive your VK password, cookies or media URLs.
+
 Chrome Manifest V3 extension for downloading VK audio as MP3, with title, artist and available cover art. The popup uses the supplied VK 2013 design: blue header, Tahoma typography, compact panels and original button artwork.
 
 ![Extension popup with track artwork](docs/images/extension-popup.png)

@@ -1,5 +1,5 @@
 // Serialized by chrome.scripting into the site's MAIN world. Keep this function self-contained.
-export async function readVkPage(requestedId = null, needMedia = false) {
+export async function readVkPage(requestedId = null, needMedia = false, catalog = {}) {
   const validId = value => /^-?\d+_\d+$/.test(String(value || '')) ? String(value) : null;
   const decodeText = value => { const element = document.createElement('textarea'); element.innerHTML = String(value || ''); return element.value; };
   const rawId = raw => Array.isArray(raw) ? validId(`${raw[1]}_${raw[0]}`) : validId(raw?.fullId || raw?.full_id || raw?.id) || validId(`${raw?.owner_id}_${raw?.id}`);
@@ -11,7 +11,7 @@ export async function readVkPage(requestedId = null, needMedia = false) {
   const currentId = rawId(current);
   const viewerId = [window.vk?.id, window.vk?.user_id, window.cur?.viewer_id, window.cur?.user_id].find(value => /^\d+$/.test(String(value || ''))) || null;
   const records = new Map();
-  const rows = [...document.querySelectorAll('[data-audio], .audio_row[data-full-id]')];
+  const rows = catalog.only ? [] : [...document.querySelectorAll('[data-audio], .audio_row[data-full-id]')];
   const rowRaw = row => { try { return JSON.parse(row.getAttribute('data-audio') || 'null'); } catch { return null; } };
   function collectArtwork(value, output, depth = 0) {
     if (!value || depth > 5 || output.length >= 24) return;
@@ -71,8 +71,9 @@ export async function readVkPage(requestedId = null, needMedia = false) {
       records.set(id, { raw, row: row || previous?.row, artworkCandidates: [...new Set([...recordArtwork(raw), ...(previous?.artworkCandidates || [])])].slice(0, 24) });
     }
   }
+  for (const raw of (catalog.records || []).slice(0, 1000)) remember(raw);
   for (const row of rows.slice(0, 100)) remember(rowRaw(row), row);
-  if (currentId) remember(current, rows.find(row => (rawId(rowRaw(row)) || validId(row.getAttribute('data-full-id'))) === currentId));
+  if (currentId && !catalog.only) remember(current, rows.find(row => (rawId(rowRaw(row)) || validId(row.getAttribute('data-full-id'))) === currentId));
   const targetId = validId(requestedId) || currentId || records.keys().next().value;
   if (targetId && !records.has(targetId)) {
     const row = rows.find(item => (rawId(rowRaw(item)) || validId(item.getAttribute('data-full-id'))) === targetId);
